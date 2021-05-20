@@ -1,9 +1,11 @@
 import React from 'react';
 import { useQuery } from 'react-query';
 
-const fetchPlanets = async () => {
+const fetchPlanets = async ({queryKey}: any) => {
   try{
-    const res = await fetch("http://swapi.dev/api/planets");
+    const [key, page] = queryKey;
+    console.log(key, page)
+    const res = await fetch(`http://swapi.dev/api/planets?page=${page}`);
     return res.json();
   }
   catch(err){
@@ -11,9 +13,15 @@ const fetchPlanets = async () => {
   }
 };
 
+
 const Planets: React.FC = () => {
-  const { data, status } = useQuery('Planets', fetchPlanets);
-    console.log(data)
+    const [page, setPage] = React.useState<number>(3);
+    const { data, status } = useQuery<any, Error>(['Planets', page], fetchPlanets, {
+      staleTime: 0,
+      cacheTime: 3000,
+      onSuccess: () => console.log('data loaded successfully')
+    });
+
     if(status === 'error'){
       return <span>Oops, Failed to get data!!</span>;
     }
